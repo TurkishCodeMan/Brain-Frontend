@@ -19,7 +19,8 @@ export default {
       setError,
     } = useAsync();
 
-    provide("user", {value:{name:'Deneme'}});
+//Bypass {value:{name:'Deneme'}}
+    provide("user", user);
     provide("login", login);
     provide("logout", logout);
 
