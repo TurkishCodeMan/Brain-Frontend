@@ -10,6 +10,7 @@ export default {
     console.log(user.value);
     onUpdated(() => console.log("App Updated User Reactive !!", user.value));
 
+
     return { user };
   },
 };
