@@ -1,6 +1,13 @@
 import { createApp } from 'vue'
-import App from './App.vue'
+import Index from './Index.vue'
 import router from './router'
 import store from './store'
+import "./scss/main.scss"
 
-createApp(App).use(store).use(router).mount('#app')
+import './assets/index.css'
+
+import { createHead } from '@vueuse/head'
+const head = createHead()
+
+
+createApp(Index).use(head).use(store).use(router).mount('#app')

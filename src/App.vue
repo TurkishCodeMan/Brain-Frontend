@@ -1,9 +1,24 @@
+<script>
+import { inject, isRef, onUpdated, provide, Suspense } from "vue";
+import UnAuthenticatedApp from "./UnAuthenticatedApp.vue";
+
+export default {
+  components: { UnAuthenticatedApp },
+
+  setup() {
+    const user = inject("user");
+    console.log(user.value);
+    onUpdated(() => console.log("App Updated User Reactive !!", user.value));
+
+    return { user };
+  },
+};
+</script>
+
+
 <template>
-  <div id="nav">
-    <router-link to="/">Home</router-link> |
-    <router-link to="/about">About</router-link>
-  </div>
-  <router-view/>
+<div v-if="user">Auth APp</div>
+  <UnAuthenticatedApp v-else />
 </template>
 
 <style lang="scss">
