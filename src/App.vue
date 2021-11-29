@@ -10,7 +10,6 @@ export default {
     console.log(user.value);
     onUpdated(() => console.log("App Updated Selahattin Dayı Reactive !!", user.value));
 
-
     return { user };
   },
 };
