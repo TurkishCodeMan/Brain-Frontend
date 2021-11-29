@@ -8,7 +8,7 @@ export default {
   setup() {
     const user = inject("user");
     console.log(user.value);
-    onUpdated(() => console.log("App Updated Selahattin Reactive !!", user.value));
+    onUpdated(() => console.log("App Updated Selahattin Vuective !!", user.value));
 
     return { user };
   },
