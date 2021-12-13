@@ -19,7 +19,6 @@ export default {
       setError,
     } = useAsync();
 
-//Bypass {value:{name:'Deneme'}}
     provide("user", user);
     provide("login", login);
     provide("logout", logout);
@@ -74,7 +73,7 @@ export default {
       <span role="button" @click="goLogin">Go Login</span>
     </div>
   </div>
-  <div v-if="isSuccess" class="auth-provider">
+  <div v-if="isSuccess" class="auth-provider w-full min-h-screen ">
     <slot></slot>
   </div>
 </template>

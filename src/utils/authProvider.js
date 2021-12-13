@@ -15,9 +15,11 @@ async function getUser(queryClient) {
     const token = getToken();
 
     if (token) {
-
-        return fetchUser(token);
+        return {value:{name:'Deneme'}}
+        //return fetchUser(token);
     }
+    handleUserResponse({AccessToken:'tokenn'})
+   
     // else {
     //     return Promise.reject('Token is not find')
     // }

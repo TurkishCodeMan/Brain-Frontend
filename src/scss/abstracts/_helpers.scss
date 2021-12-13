@@ -118,44 +118,44 @@ $sides: top, bottom, left, right;
 4. Dark helpers
 ========================================================================== */
 
-.is-dark {
+.dark {
   //Card border helper
-  .is-dark-card-bordered,
-  .is-dark-bordered-12 {
+  .dark-card-bordered,
+  .dark-bordered-12 {
     border-color: var(--dark-sidebar-light-12) !important;
   }
 
   //Primary Helper
-  .is-dark-primary {
+  .dark-primary {
     color: var(--primary) !important;
   }
 
-  .is-dark-primary-hover:hover {
+  .dark-primary-hover:hover {
     color: var(--primary) !important;
   }
 
   //BG Helpers
-  .is-dark-bg-1 {
+  .dark-bg-1 {
     background: var(--dark-sidebar-light-1) !important;
   }
 
-  .is-dark-bg-2 {
+  .dark-bg-2 {
     background: var(--dark-sidebar-light-2) !important;
   }
 
-  .is-dark-bg-3 {
+  .dark-bg-3 {
     background: var(--dark-sidebar-light-3) !important;
   }
 
-  .is-dark-bg-4 {
+  .dark-bg-4 {
     background: var(--dark-sidebar-light-4) !important;
   }
 
-  .is-dark-bg-5 {
+  .dark-bg-5 {
     background: var(--dark-sidebar-light-5) !important;
   }
 
-  .is-dark-bg-6 {
+  .dark-bg-6 {
     background: var(--dark-sidebar-light-6) !important;
   }
 }
