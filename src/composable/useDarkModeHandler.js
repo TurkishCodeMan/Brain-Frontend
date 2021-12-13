@@ -3,7 +3,7 @@ import { computed, watchEffect } from 'vue'
 import { usePreferredDark, useStorage } from '@vueuse/core'
 
 
-const DARK_MODE_BODY_CLASS = 'is-dark'
+const DARK_MODE_BODY_CLASS = 'dark'
 const preferredDark = usePreferredDark()
 
 export const colorSchema = useStorage('color-schema', 'auto')

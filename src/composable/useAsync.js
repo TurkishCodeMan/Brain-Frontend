@@ -48,11 +48,8 @@ function useAsync(initialState) {
         if (!promise || !promise.then) {
             throw new Error(`The argument passed to useAsync().run must be a promise.`)
         }
-        console.log("rund")
-
         state.status = "pending"
         await sleep(1000)
-        console.log("rund 2")
         return promise.then(
             newData => {
 

@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import Home from '../views/Home.vue'
+import FileList from '../views/FileList.vue'
 
 const routes = [
   {
@@ -7,7 +8,11 @@ const routes = [
     name: 'Home',
     component: Home
   },
-
+  {
+    path: '/file-list',
+    name: 'FileList',
+    component: FileList
+  },
 ]
 
 const router = createRouter({
