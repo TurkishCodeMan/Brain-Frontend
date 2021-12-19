@@ -2,11 +2,14 @@ import { createRouter, createWebHistory } from 'vue-router'
 import Home from '../views/Home.vue'
 import FileList from '../views/FileList.vue'
 
+
+
+//Rgister Eksikkkk
 const routes = [
   {
     path: '/',
     name: 'Home',
-    component: Home
+    component: Home,
   },
   {
     path: '/file-list',

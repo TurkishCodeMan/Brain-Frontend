@@ -1,7 +1,7 @@
 import useNotyf from "@/composable/useNotyf"
 import { useRouter } from "vue-router"
 
-const authURL = "https://dev.api.dsumma.com/v1"
+const authURL = "http://localhost:8081"
 const localStorageKey = "my__token"
 const localStorageUser = 'my__user'
 
@@ -11,52 +11,56 @@ function getToken() {
     return window.localStorage.getItem(localStorageKey);
 }
 
-async function getUser(queryClient) {
+async function getUser() {
     const token = getToken();
 
     if (token) {
-        return {value:{name:'Deneme'}}
-        //return fetchUser(token);
+         return fetchUser(token);
     }
-    handleUserResponse({AccessToken:'tokenn'})
-   
-    // else {
-    //     return Promise.reject('Token is not find')
-    // }
+
+    else {
+        return Promise.reject('Token is not find')
+    }
 }
 
 
 
 function handleUserResponse(res) {
-    if (!res.AccessToken) {
-        const notif = useNotyf();
+    console.log(res)
+    const notif = useNotyf();
+
+    if (!res.status) {
         notif.error('Please check credentials !')
         return Promise.reject("User Not Found !")
     }
-    window.localStorage.setItem(localStorageKey, res.AccessToken)
-    return res.AccessToken;
+    window.localStorage.setItem(localStorageKey, res.token)
+    return res.token;
+
 }
 
 function userResponse(res) {
-    return res.User;
+    console.log(res)
+    return res.user
 }
 
 
 async function login({ username, password }) {
-    return client('authentication/login',
-        { data: { Username: username, Password: btoa(password) } })
+    return client('login',
+        { data: { email: username, password: password } })
         .then(handleUserResponse)
         .then(fetchUser)
+
 
 }
 
 function fetchUser(token) {
-
-    return client('identity/user', { method: 'GET', token }).then(userResponse)
+    console.log(token)
+    return client(`?token=${token}`, { method: 'GET', token }).then(userResponse)
 }
 
-function register({ username, password }) {
-    return client('user/register', { data: { username, password } }).then(handleUserResponse)
+function register({ first_name, last_name, email, password }) {
+    return client('register', { data: { first_name, last_name, email, password } })
+    .then(user=>user)
 }
 
 async function logout() {
@@ -64,6 +68,11 @@ async function logout() {
     window.localStorage.removeItem(localStorageUser);
 }
 
+function manuelLogout(){
+    const token=getToken()
+    logout()
+    return client("logout",{token}).then(res=>res)
+}
 
 
 async function client(endpoint, { data, token, ...options } = {}) {
@@ -74,6 +83,7 @@ async function client(endpoint, { data, token, ...options } = {}) {
         headers: {
             'Content-Type': 'application/json',
             'Authorization': token ? `Bearer ${token}` : undefined,
+            'x-access-token':token?token:undefined,
             'CompanyId': 'b8da8bef-b97c-ea11-a2cf-00505692fd9d'
         },
         ...options
@@ -94,4 +104,4 @@ async function client(endpoint, { data, token, ...options } = {}) {
     })
 }
 
-export { getToken, getUser, login, register, logout, localStorageKey }
+export { getToken, getUser, login, register, logout,manuelLogout, localStorageKey }

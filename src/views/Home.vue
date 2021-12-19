@@ -4,39 +4,60 @@ import { useHead } from "@vueuse/head";
 import { Icon } from "@iconify/vue";
 import { ref } from "@vue/reactivity";
 import { inject } from "@vue/runtime-core";
+import { useUploadFile } from "@/utils/brain";
+import { useClient } from "@/utils/apiClient";
+import { getToken } from "@/utils/authProvider";
+import useNotyf from "@/composable/useNotyf";
+
 export default {
   components: { Icon },
   setup() {
+    const client = useClient();
+      const notif = useNotyf();
+    const user = inject("user");
+    const token = getToken();
+    const fetcher = function (file) {
+      const formData = new FormData();
+      formData.append("file", file);
+      return client(`uploadZip?id=${user.value._id}&token=${token}`, {
+        method: "POST",
+        data: formData,
+        formData:true
+      }).then((data) => data);
+    };
+
     const file = ref(null);
     let fileList = ref([]);
 
-    function onChange() {
+    async function manuelUpload(event) {
+      fileList.value = [...event.target.files, fileList.value];
+      const result = await fetcher(fileList.value[0]);
+      console.log(result);
+      if(result.status){
+        notif.success(result.message)
+      }
+    }
+
+    async function onChange() {
       fileList.value = [...file.files, ...fileList.value];
+      const result = await fetcher(fileList.value[0]);
+      console.log(result);
     }
     function remove(i) {
       fileList.value.splice(i, 1);
     }
     function dragover(event) {
       event.preventDefault();
-      // Add some visual fluff to show the user can drop its files
-      if (!event.currentTarget.classList.contains("bg-green-300")) {
-        event.currentTarget.classList.remove("bg-gray-100");
-        event.currentTarget.classList.add("bg-green-300");
-      }
     }
     function dragleave(event) {
-      // Clean up
-      event.currentTarget.classList.add("bg-gray-100");
+      event.currentTarget.classList.add("bg-gray-200");
       event.currentTarget.classList.remove("bg-green-300");
     }
     function drop(event) {
       event.preventDefault();
       file.files = event.dataTransfer.files;
       console.log(event.dataTransfer.files);
-      onChange(); // Trigger the onChange event manually
-      // Clean up
-      event.currentTarget.classList.add("bg-gray-100");
-      event.currentTarget.classList.remove("bg-green-300");
+      onChange();
     }
     const logoutHandler = inject("logout");
 
@@ -49,39 +70,42 @@ export default {
       isDark,
       file,
       logoutHandler,
+      user,
       onChange,
       remove,
       dragover,
       dragleave,
       drop,
+      manuelUpload,
     };
   },
 };
 </script>
 
 <style lang="scss" scoped>
-
 </style>
 
 
 
-<template> 
-  <div class="w-full h-full  "
-  >
-    <header class="w-full h-24 dark:bg-blue-700 bg-gradient-to-r from-indigo-400 to-purple-300 px-4">
+<template>
+  <div class="w-full h-full">
+    <header
+      class="
+        w-full
+        h-24
+        dark:bg-blue-700
+        bg-gradient-to-r
+        from-indigo-400
+        to-purple-300
+        px-4
+      "
+    >
       <div
-        class="
-          w-full
-          h-full
-          text-gray-200
-          flex
-          items-center
-          justify-between
-        "
+        class="w-full h-full text-gray-200 flex items-center justify-between"
       >
         <img src="@/assets/brain.png" width="100" />
 
-        <div class="grid grid-cols-4 gap-8">
+        <div class="grid grid-cols-4 gap-8 mr-auto">
           <RouterLink
             tag="p"
             to="/"
@@ -98,22 +122,27 @@ export default {
           </RouterLink>
         </div>
 
-        <label class="dark-mode ml-auto ">
-          <input
-            type="checkbox"
-            :checked="!isDark"
-            @change="useDarkModeHandler"
-          />
-          <span></span>
-        </label>
+        <div class="flex items-center justify-between">
+          <p class="mr-4 text-lg text-gray-700 dark:text-gray-200">
+            {{ user.first_name }}
+          </p>
+          <label class="dark-mode ml-auto">
+            <input
+              type="checkbox"
+              :checked="!isDark"
+              @change="useDarkModeHandler"
+            />
+            <span></span>
+          </label>
 
-        <Icon
-          @click="logoutHandler"
-          icon="feather:log-out"
-          width="30"
-          class="text-gray-100"
-          style="background-color: transparent; margin-left: 20px"
-        />
+          <Icon
+            @click="logoutHandler"
+            icon="feather:log-out"
+            width="30"
+            class="text-gray-100"
+            style="background-color: transparent; margin-left: 20px"
+          />
+        </div>
       </div>
     </header>
     <div class="w-full sm:h-96 py-10">
@@ -123,7 +152,9 @@ export default {
         width="100"
       />
 
-      <p class="text-md md:text-2xl w-full text-gray-800 font-sans font-semibold">
+      <p
+        class="text-md md:text-2xl w-full text-gray-800 font-sans font-semibold"
+      >
         Segment App is an online MRI brain volumetry system. It is intended to
         help researchers all over the world to obtain automatically volumetric
         brain information from their MRI data without the need for any
@@ -144,7 +175,7 @@ export default {
       class="
         p-12
         bg-transparent
-       text-gray-200
+        text-gray-200
         border border-gray-200
         md:m-20
         h-96
@@ -163,9 +194,10 @@ export default {
         name="fields[assetsFieldHandle][]"
         id="assetsFieldHandle"
         class="w-px h-px opacity-0 overflow-hidden absolute"
-        @change="onChange"
+        @change="manuelUpload"
+        
         :ref="file"
-        accept=".pdf,.jpg,.jpeg,.png"
+        accept=".pdf,.jpg,.jpeg,.png,.zip,.rar"
       />
 
       <label for="assetsFieldHandle" class="block cursor-pointer">
@@ -175,7 +207,7 @@ export default {
         </div>
       </label>
       <ul
-        class="mt-4 flex flex-col items-center justify-center"
+        class="mt-4 flex flex-col bg-transparent items-center justify-center"
         v-if="fileList.length"
         v-cloak
       >

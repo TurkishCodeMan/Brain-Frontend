@@ -5,42 +5,261 @@ import { useHead } from "@vueuse/head";
 import { isDark, useDarkModeHandler } from "@/composable/useDarkModeHandler";
 import useNotyf from "@/composable/useNotyf";
 import { useAsync } from "@/composable/useAsync";
-import Login from "./Login";
-import Register from "./Register";
+import { Icon } from "@iconify/vue";
 
 export default {
-  components: { Login, Register },
-  async setup() {
-    const type = ref("login");
+  components: { Icon },
+  async setup(props, { emit }) {
+    const { data: user, error, status, isLoading, run, setData } = useAsync();
 
-    function setType(selectType) {
-      console.log(selectType)
-      return (type.value = selectType);
-    }
+    const step = ref("login");
+
+    const form = reactive({
+      first_name: "",
+      last_name: "",
+      email: "",
+      password: "",
+    });
+
+    const router = useRouter();
+    const route = useRoute();
+    const notif = useNotyf();
+    //const userSession = useUserSession();
+    const redirect = route.query.redirect;
+    const registerHandler = inject("register");
+
+    const handleRegister = async () => {
+      await run(new Promise((res) => res(registerHandler(form))));
+      if (user) {
+        notif.success('Register Success !')
+        return emit("goLogin");
+      }
+      return notif.warning('Please re-register')
+    };
 
     useHead({
-      title: "UNaUTH",
+      title: "Login",
     });
 
     return {
-      type,
-      setType,
+      form,
+      handleRegister,
+      useDarkModeHandler,
+      isDark,
+      step,
+      isLoading,
     };
   },
 };
 </script>
 
 <template>
-  <div>
-    <div v-if="type === 'login'">
-      <Login @goRegister="setType('register')" />
-    </div>
-    <div v-else>
-      <Register @goLogin="setType('login')" />
+  <div class="modern-login">
+    <div class="underlay h-hidden-mobile h-hidden-tablet-p"></div>
+    <div class="columns is-gapless is-vcentered">
+      <div class="column is-relative is-8 h-hidden-mobile h-hidden-tablet-p">
+        <div class="hero is-fullheight is-image">
+          <div class="hero-body">
+            <div class="container">
+              <div class="columns">
+                <div class="column"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="column is-4 is-relative">
+        <RouterLink :to="{ name: 'Home' }" class="top-logo"> </RouterLink>
+
+        <label class="dark-mode ml-auto">
+          <input
+            type="checkbox"
+            :checked="!isDark"
+            @change="useDarkModeHandler"
+          />
+          <span></span>
+        </label>
+        <div class="is-form">
+          <div class="hero-body">
+            <div class="form-text">
+              <h2>Sign On</h2>
+
+              <p>Welcome back to your account.</p>
+            </div>
+            <div class="form-text is-hidden">
+              <h2>Recover Account</h2>
+              <p>Reset your account password.</p>
+            </div>
+            <form
+              :class="[step !== 'login' && 'is-hidden']"
+              class="login-wrapper"
+              @submit.prevent="handleRegister"
+            >
+              <div class="control has-validation">
+                <input
+                  type="text"
+                  name="first_name"
+                  class="input"
+                  placeholder=""
+                  autocomplete="first_name"
+                  v-model="form.first_name"
+                />
+                <small class="error-text">This is a required field</small>
+                <div class="auth-label">First Name</div>
+                <div class="autv-icon">
+                  <i aria-hidden="true" class="lnil lnil-envelope"></i>
+                </div>
+              </div>
+              <div class="control has-validation">
+                <input
+                  type="text"
+                  name="last_name"
+                  class="input"
+                  placeholder=""
+                  autocomplete="last_name"
+                  v-model="form.last_name"
+                />
+                <small class="error-text">This is a required field</small>
+                <div class="auth-label">Last Name</div>
+                <div class="autv-icon">
+                  <i aria-hidden="true" class="lnil lnil-envelope"></i>
+                </div>
+              </div>
+
+              <div class="control has-validation">
+                <input
+                  type="text"
+                  name="email"
+                  class="input"
+                  placeholder=""
+                  autocomplete="email"
+                  v-model="form.email"
+                />
+                <small class="error-text">This is a required field</small>
+                <div class="auth-label">Email(Username)</div>
+                <div class="autv-icon">
+                  <i aria-hidden="true" class="lnil lnil-envelope"></i>
+                </div>
+              </div>
+              <div class="control has-validation">
+                <input
+                  name="password"
+                  type="password"
+                  class="input"
+                  autocomplete="current-password"
+                  v-model="form.password"
+                />
+                <div class="auth-label">Password</div>
+                <div class="autv-icon">
+                  <i aria-hidden="true" class="lnil lnil-lock-alt"></i>
+                </div>
+              </div>
+
+              <div class="control is-flex">
+                <label class="remember-toggle">
+                  <input type="checkbox" />
+                  <span class="toggler">
+                    <span class="active">
+                      <i
+                        aria-hidden="true"
+                        class="iconify"
+                        data-icon="feather:check"
+                      ></i>
+                    </span>
+                    <span class="inactive">
+                      <i
+                        aria-hidden="true"
+                        class="iconify"
+                        data-icon="feather:circle"
+                      ></i>
+                    </span>
+                  </span>
+                </label>
+                <div class="remember-me">Remember Me</div>
+                <a @click="step = 'forgot-password'">Forgot Password?</a>
+              </div>
+              <div class="button-wrap has-help">
+                <button
+                  class="
+                    bg-green-300
+                    p-4
+                    rounded-md
+                    text-gray-600
+                    flex
+                    items-center
+                  "
+                >
+                  Register
+                  <Icon
+                    v-show="isLoading"
+                    icon="feather:rotate-ccw"
+                    color="green"
+                    :rotate="1"
+                    width="24"
+                    style="
+                      animation: spin 1s linear infinite;
+                      background-color: transparent;
+                      margin-left: 4px;
+                    "
+                    :horizontalFlip="true"
+                  />
+                </button>
+
+                <span>
+                  Or
+                  <button @click="$emit('goLogin')">login</button>
+                  an yout account.
+                </span>
+              </div>
+            </form>
+
+            <form
+              :class="[step !== 'forgot-password' && 'is-hidden']"
+              class="login-wrapper"
+              @submit.prevent
+            >
+              <p class="recover-text">
+                Enter your username and click on the confirm button to reset
+                your password. We'll send you an username detailing the steps to
+                complete the procedure.
+              </p>
+              <div class="control has-validation">
+                <input type="text" class="input" autocomplete="username" />
+                <small class="error-text">This is a required field</small>
+                <div class="auth-label">username Address</div>
+                <div class="autv-icon">
+                  <i aria-hidden="true" class="lnil lnil-envelope"></i>
+                </div>
+              </div>
+              <div class="button-wrap">
+                <button
+                  color="white"
+                  size="big"
+                  lower
+                  rounded
+                  @click="step = 'login'"
+                >
+                  Cancel
+                </button>
+                <button
+                  color="primary"
+                  size="big"
+                  type="submit"
+                  lower
+                  rounded
+                  solid
+                  @click="step = 'login'"
+                >
+                  Confirm
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </template>
-
 
 <style lang="scss" scoped>
 @import "./scss/abstracts/_mixins.scss";

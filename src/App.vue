@@ -10,7 +10,7 @@ export default {
     const user = inject("user");
     console.log(user.value);
     onUpdated(() =>
-      console.log("App Updated Selahattin Dayı Reactive !!", user.value)
+      console.log("App Updated  Reactive !!", user.value)
     );
 
     return { user };

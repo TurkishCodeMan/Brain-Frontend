@@ -21,6 +21,7 @@ export default {
 
     provide("user", user);
     provide("login", login);
+    provide("register", register);
     provide("logout", logout);
 
     await run(new Promise((res) => res(auth.getUser())));
@@ -31,8 +32,14 @@ export default {
       });
     }
 
+    function register(formData) {
+      auth.register(formData).then((user) => {
+        return user;
+      });
+    }
     function logout() {
-      auth.logout();
+      auth.manuelLogout();
+      console.log("----");
       setData(null);
     }
 
@@ -73,7 +80,7 @@ export default {
       <span role="button" @click="goLogin">Go Login</span>
     </div>
   </div>
-  <div v-if="isSuccess" class="auth-provider w-full min-h-screen ">
+  <div v-if="isSuccess" class="auth-provider w-full min-h-screen">
     <slot></slot>
   </div>
 </template>
