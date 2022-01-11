@@ -3,38 +3,122 @@ import { isDark, useDarkModeHandler } from "@/composable/useDarkModeHandler";
 import { useHead } from "@vueuse/head";
 import { Icon } from "@iconify/vue";
 import { ref } from "@vue/reactivity";
-import { inject } from "@vue/runtime-core";
-import { useUploadFile } from "@/utils/brain";
+import {
+  inject,
+  onMounted,
+  onUpdated,
+  watch,
+  watchEffect,
+} from "@vue/runtime-core";
 import { useClient } from "@/utils/apiClient";
 import { getToken } from "@/utils/authProvider";
 import useNotyf from "@/composable/useNotyf";
+import FileList from "./FileList.vue";
+import { useUserFolders } from "@/utils/brain";
 
+import TreeItem from "@/components/TreeItem";
 export default {
-  components: { Icon },
+  components: { Icon, FileList },
   setup() {
     const client = useClient();
-      const notif = useNotyf();
+    const notif = useNotyf();
     const user = inject("user");
     const token = getToken();
+    const fileListData = ref([]);
+    const fileDirectory = ref(null);
+
+    const nodes = ref([
+      {
+        id: "1",
+        label: "a",
+        nodes: [
+          {
+            id: "4",
+            label: "aa",
+          },
+          {
+            id: "5",
+            label: "ab",
+          },
+        ],
+      },
+      {
+        id: "2",
+        label: "b",
+        nodes: [
+          {
+            id: "6",
+            label: "ba",
+            nodes: [
+              {
+                id: "11",
+                label: "aaaa",
+                nodes: [
+                  {
+                    id: "15",
+                    label: "aaaa",
+                  },
+                  {
+                    id: "16",
+                    label: "bbbb",
+                  },
+                ],
+              },
+              {
+                id: "12",
+                label: "bbbb",
+              },
+            ],
+          },
+          {
+            id: "7",
+            label: "bb",
+            nodes: [
+              {
+                id: "13",
+                label: "cccc",
+              },
+              {
+                id: "14",
+                label: "dddd",
+              },
+            ],
+          },
+        ],
+      },
+      {
+        id: "3",
+        label: "c",
+      },
+    ]);
+
     const fetcher = function (file) {
       const formData = new FormData();
       formData.append("file", file);
       return client(`uploadZip?id=${user.value._id}&token=${token}`, {
         method: "POST",
         data: formData,
-        formData:true
+        formData: true,
       }).then((data) => data);
+    };
+
+    const fetchFileDirectory = async (token) => {
+      return client(`?token=${token}`).then((data) => data);
     };
 
     const file = ref(null);
     let fileList = ref([]);
 
+    const uploadSuccess = ref(false);
+
     async function manuelUpload(event) {
       fileList.value = [...event.target.files, fileList.value];
       const result = await fetcher(fileList.value[0]);
       console.log(result);
-      if(result.status){
-        notif.success(result.message)
+      if (result.status) {
+        notif.success(result.message);
+      
+      uploadSuccess.value = false
       }
     }
 
@@ -61,9 +145,45 @@ export default {
     }
     const logoutHandler = inject("logout");
 
+    async function fetchUserFolder() {
+      const data = await useUserFolders({
+        id: user.value._id,
+      });
+      fileListData.value = data;
+
+      console.log("-******")
+    }
+
+    watch(fileList, async () => {
+      console.log("--Guncellendis");
+        uploadSuccess.value = true;
+      await fetchUserFolder();
+    });
+
+    onMounted(async () => {
+      fileDirectory.value = await fetchFileDirectory(token);
+
+      nodes.value = fileDirectory.value.directories;
+
+      fileListData.value.forEach((element) => {
+        nodes.value = nodes.value.map((item) => {
+          if (item.label === element.name) {
+            return {
+              ...element,
+              ...item,
+            };
+          }
+        });
+      });
+
+      console.log(nodes.value);
+      await fetchUserFolder();
+    });
+
     useHead({
       title: "Segmentation",
     });
+
     return {
       fileList,
       useDarkModeHandler,
@@ -77,12 +197,18 @@ export default {
       dragleave,
       drop,
       manuelUpload,
+      fileListData,
+      uploadSuccess,
+      nodes,
     };
   },
 };
 </script>
 
 <style lang="scss" scoped>
+.tree-row {
+  padding: 80px !important;
+}
 </style>
 
 
@@ -113,13 +239,6 @@ export default {
           >
             Brain Segmentation
           </RouterLink>
-          <RouterLink
-            tag="p"
-            to="/file-list"
-            class="text-gray-700 dark:text-gray-200 text-lg font-medium"
-          >
-            File List
-          </RouterLink>
         </div>
 
         <div class="flex items-center justify-between">
@@ -145,32 +264,6 @@ export default {
         </div>
       </div>
     </header>
-    <div class="w-full sm:h-96 py-10">
-      <img
-        src="@/assets/brain.png"
-        class="bg-transparent float-left p-5"
-        width="100"
-      />
-
-      <p
-        class="text-md md:text-2xl w-full text-gray-800 font-sans font-semibold"
-      >
-        Segment App is an online MRI brain volumetry system. It is intended to
-        help researchers all over the world to obtain automatically volumetric
-        brain information from their MRI data without the need for any
-        infrastructure in their local sites. volBrain works in a fully automatic
-        manner and is able to provide brain structure volumes without any human
-        interaction. We encourage you to use the system hoping you find it
-        useful. The number of cases each user can submit daily is limited to 10
-        cases in order to share our limited computational resources between all
-        users. This evaluation version of volBrain is free for non-commercial
-        and non-medical purposes. Please contact demo@demo.dk or
-        pierrick.coupe@labri.fr for processing large amount of data. We are
-        looking for collaboration to evaluate and improve our platform, please
-        contact us with any feedback.
-      </p>
-    </div>
-
     <div
       class="
         p-12
@@ -183,6 +276,10 @@ export default {
         rounded-lg
         items-center
         justify-center
+        bg-gradient-to-r
+        from-yellow-300
+        to-yellow-200
+        relative
       "
       @dragover="dragover"
       @dragleave="dragleave"
@@ -195,35 +292,50 @@ export default {
         id="assetsFieldHandle"
         class="w-px h-px opacity-0 overflow-hidden absolute"
         @change="manuelUpload"
-        
         :ref="file"
         accept=".pdf,.jpg,.jpeg,.png,.zip,.rar"
       />
 
       <label for="assetsFieldHandle" class="block cursor-pointer">
-        <div class="text-gray-100 text-xl font-sans">
+        <div class="text-gray-600 text-xl font-sans">
           Explain to our users they can drop files in here or
           <span class="underline">click here</span> to upload their files
         </div>
       </label>
-      <ul
-        class="mt-4 flex flex-col bg-transparent items-center justify-center"
-        v-if="fileList.length"
-        v-cloak
+
+      <div
+        v-show="uploadSuccess"
+        class="
+          absolute
+          z-10
+          bg-opacity-70 bg-green-200
+          transition-all
+          animate-ping
+          flex
+          items-center
+          justify-center
+          w-full
+          h-full
+          text-2xl
+        "
       >
-        <li class="text-sm p-1" v-for="file in fileList" :key="file">
-          {{ file.name
-          }}<button
-            class="ml-2"
-            type="button"
-            @click="remove(fileList.indexOf(file))"
-            title="Remove file"
-          >
-            remove
-          </button>
-        </li>
-      </ul>
+        <Icon
+          icon="feather:check-circle"
+          width="80"
+          class="text-green-500"
+          style="background-color: transparent; margin-left: 20px"
+        />
+      </div>
     </div>
+
+    <!-- <TreeItem
+      class="item"
+      v-for="item in nodes"
+      :key="item.id"
+      :item="item"
+    ></TreeItem> -->
+
+    <FileList :data="fileListData" />
   </div>
 </template>
 

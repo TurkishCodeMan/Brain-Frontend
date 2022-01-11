@@ -1,6 +1,7 @@
 import * as auth from './authProvider';
 
-const apiURL = "http://localhost:8081"
+const apiURL = 'http://www.medical-structures.com:8000/api'
+//const apiURL = 'http://localhost:8000/api'
 
 async function client(
     endpoint,

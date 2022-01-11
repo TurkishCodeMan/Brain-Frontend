@@ -1,21 +1,31 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import UnAuthenticatedApp from '../UnAuthenticatedApp.vue'
+import UnAuthUpload from '../views/UnAuthUpload.vue'
+
 import Home from '../views/Home.vue'
-import FileList from '../views/FileList.vue'
-
-
-
+import App from "../App.vue";
 //Rgister Eksikkkk
 const routes = [
+
   {
     path: '/',
-    name: 'Home',
-    component: Home,
+    name:'Home',
+    components: {
+      default: Home,
+      unAuth: UnAuthUpload,
+    },
   },
+
   {
-    path: '/file-list',
-    name: 'FileList',
-    component: FileList
+    path: '/login',
+    name: 'Login',
+    components: {
+      default:Home,
+      unAuth: UnAuthenticatedApp,
+    },
   },
+
+
 ]
 
 const router = createRouter({

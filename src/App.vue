@@ -1,10 +1,10 @@
 <script>
 import { inject, isRef, onUpdated, provide, Suspense } from "vue";
-import UnAuthenticatedApp from "./UnAuthenticatedApp.vue";
-import AuthenticatedApp from "./AuthenticatedApp.vue";
+//import UnAuthenticatedApp from "./UnAuthenticatedApp.vue";
+//import AuthenticatedApp from "./AuthenticatedApp.vue";
 
 export default {
-  components: { UnAuthenticatedApp, AuthenticatedApp },
+  components: {   },
 
   setup() {
     const user = inject("user");
@@ -20,8 +20,8 @@ export default {
 
 
 <template>
-  <AuthenticatedApp v-if="user" />
-  <UnAuthenticatedApp v-else />
+  <router-view v-if="user" />
+  <router-view name="unAuth" v-else />
 </template>
 
 <style lang="postcss">

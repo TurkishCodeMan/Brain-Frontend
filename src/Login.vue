@@ -47,7 +47,7 @@ export default {
 </script>
 
 <template>
-  <div class="modern-login">
+  <div >
     <div class="underlay h-hidden-mobile h-hidden-tablet-p"></div>
     <div class="columns is-gapless is-vcentered">
       <div class="column is-relative is-8 h-hidden-mobile h-hidden-tablet-p">
@@ -61,8 +61,8 @@ export default {
           </div>
         </div>
       </div>
-      <div class="column is-4 is-relative">
-        <RouterLink :to="{ name: 'Home' }" class="top-logo"> </RouterLink>
+      <div class="column is-4 is-relative flex items-center"> 
+        <RouterLink :to="{ name: 'Home' }" class="top-logo"> Home</RouterLink>
 
         <label class="dark-mode ml-auto">
           <input
@@ -72,14 +72,18 @@ export default {
           />
           <span></span>
         </label>
+        <RouterLink tag="p" :to="{ name: 'Home' }" class="top-logo  text-lg text-white">
+         Back Home Page
+        </RouterLink>
+
         <div class="is-form">
           <div class="hero-body">
-            <div class="form-text">
+            <div class="form-text text-lg text-white">
               <h2>Sign In</h2>
 
               <p>Welcome back to your account.</p>
             </div>
-            <div class="form-text is-hidden">
+            <div class="form-text is-hidden  text-lg text-white">
               <h2>Recover Account</h2>
               <p>Reset your account password.</p>
             </div>
@@ -98,7 +102,7 @@ export default {
                   v-model="form.username"
                 />
                 <small class="error-text">This is a required field</small>
-                <div class="auth-label">Username</div>
+                <div class="auth-label  text-lg text-white">Username</div>
                 <div class="autv-icon">
                   <i aria-hidden="true" class="lnil lnil-envelope"></i>
                 </div>
@@ -169,7 +173,7 @@ export default {
 
                 <span>
                   Or
-                  <button @click="$emit('goRegister')"> Create </button>
+                  <button @click="$emit('goRegister')">Create</button>
                   an account.
                 </span>
               </div>

@@ -20,6 +20,8 @@
     "swrv": "^1.0.0-beta.8",
     "vue": "^3.0.0",
     "vue-router": "^4.0.0-0",
+    "vue3-tree": "^0.10.0",
+    "vue3-treeview": "^0.3.5",
     "vuex": "^4.0.0-0"
   },
   "devDependencies": {
