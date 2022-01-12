@@ -1,8 +1,8 @@
 import useNotyf from "@/composable/useNotyf"
 import { useRouter } from "vue-router"
 
-const authURL = 'http://www.medical-structures.com:8000/api'
-//const authURL = 'http://localhost:8000/api'
+//const authURL = 'http://www.medical-structures.com:8000/api'
+const authURL = 'http://localhost:8000/api'
 const localStorageKey = "my__token"
 const localStorageUser = 'my__user'
 

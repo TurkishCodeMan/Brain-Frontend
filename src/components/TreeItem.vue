@@ -11,14 +11,17 @@
       justify-between
       items-center
       flex-col
+      
     "
   >
+
+  
     <div class="flex" :class="{ bold: isFolder }" @click="toggle" @dblclick="makeFolder">
-      <h3 class="sm:w-72">{{ item.label }}</h3>
+      <h3 class="sm:w-72 text-white">{{ item.label }}</h3>
      
       <span v-if="isFolder"  >[{{ isOpen ? "-" : "+" }}]</span>
     </div>
-    <ul v-show="isOpen" v-if="isFolder">
+    <ul v-show="isOpen" v-if="isFolder && item?.nodes && item?.nodes.length>0">
       <TreeItem
         class="item"
         v-for="(child, index) in item.nodes"

@@ -1,15 +1,17 @@
 import { useClient } from "@/utils/apiClient";
+import { getToken } from "./authProvider";
 
 async function useUserFolders({ options = {}, id }) {
     const client = useClient()
+    const token=getToken()
+    const fetcher = function async() {
+        return client(`?token=${token}`, 
+        { method: 'GET', token })
+        .then(data=>data.folders)
 
-    const fetcher = function async () {
-        return client(
-            `getZips?id=${id}`
-        ).then((data) => data);
     };
 
-    const result=await fetcher();
+    const result = await fetcher();
 
     return result
 

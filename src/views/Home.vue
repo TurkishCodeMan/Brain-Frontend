@@ -16,9 +16,10 @@ import useNotyf from "@/composable/useNotyf";
 import FileList from "./FileList.vue";
 import { useUserFolders } from "@/utils/brain";
 
-import TreeItem from "@/components/TreeItem";
+import File from "@/components/File";
+import { useRoute, useRouter } from "vue-router";
 export default {
-  components: { Icon, FileList },
+  components: { Icon,File },
   setup() {
     const client = useClient();
     const notif = useNotyf();
@@ -26,71 +27,9 @@ export default {
     const token = getToken();
     const fileListData = ref([]);
     const fileDirectory = ref(null);
-
-    const nodes = ref([
-      {
-        id: "1",
-        label: "a",
-        nodes: [
-          {
-            id: "4",
-            label: "aa",
-          },
-          {
-            id: "5",
-            label: "ab",
-          },
-        ],
-      },
-      {
-        id: "2",
-        label: "b",
-        nodes: [
-          {
-            id: "6",
-            label: "ba",
-            nodes: [
-              {
-                id: "11",
-                label: "aaaa",
-                nodes: [
-                  {
-                    id: "15",
-                    label: "aaaa",
-                  },
-                  {
-                    id: "16",
-                    label: "bbbb",
-                  },
-                ],
-              },
-              {
-                id: "12",
-                label: "bbbb",
-              },
-            ],
-          },
-          {
-            id: "7",
-            label: "bb",
-            nodes: [
-              {
-                id: "13",
-                label: "cccc",
-              },
-              {
-                id: "14",
-                label: "dddd",
-              },
-            ],
-          },
-        ],
-      },
-      {
-        id: "3",
-        label: "c",
-      },
-    ]);
+    const route = useRoute();
+    const router = useRouter();
+    const nodes = ref([]);
 
     const fetcher = function (file) {
       const formData = new FormData();
@@ -111,21 +50,28 @@ export default {
 
     const uploadSuccess = ref(false);
 
-    async function manuelUpload(event) {
-      fileList.value = [...event.target.files, fileList.value];
-      const result = await fetcher(fileList.value[0]);
+    async function reFetch(result) {
       console.log(result);
       if (result.status) {
         notif.success(result.message);
-      
-      uploadSuccess.value = false
       }
+      uploadSuccess.value = false;
+
+      await fetchUserFolder();
+    }
+
+    async function manuelUpload(event) {
+      fileList.value = [...event.target.files, fileList.value];
+      uploadSuccess.value = true;
+      const result = await fetcher(fileList.value[0]);
+      await reFetch(result);
     }
 
     async function onChange() {
       fileList.value = [...file.files, ...fileList.value];
+      uploadSuccess.value = true;
       const result = await fetcher(fileList.value[0]);
-      console.log(result);
+      await reFetch(result);
     }
     function remove(i) {
       fileList.value.splice(i, 1);
@@ -151,33 +97,40 @@ export default {
       });
       fileListData.value = data;
 
-      console.log("-******")
+      console.log("-******");
     }
 
-    watch(fileList, async () => {
-      console.log("--Guncellendis");
-        uploadSuccess.value = true;
-      await fetchUserFolder();
-    });
-
     onMounted(async () => {
+      if (route.path.includes("login")) {
+        router.push("/");
+      }
+      await fetchUserFolder();
+      var newNodes=[]
       fileDirectory.value = await fetchFileDirectory(token);
-
       nodes.value = fileDirectory.value.directories;
 
-      fileListData.value.forEach((element) => {
-        nodes.value = nodes.value.map((item) => {
-          if (item.label === element.name) {
-            return {
-              ...element,
+       fileListData.value.forEach((element) => {
+         return nodes.value.forEach((item) => {
+           if (item.label.slice(5)===element.fileName) {
+             return newNodes.push({
+               ...element,
               ...item,
-            };
-          }
-        });
-      });
+              label:item.label.slice(5)
+            })
+         }else if(item.label!=''&&!newNodes.some(inItem=>item.label===inItem.label)&&!item.label.match(/file/g)){
+           return newNodes.push({
+             ...item,
 
-      console.log(nodes.value);
-      await fetchUserFolder();
+           })
+         }
+         });
+       });
+       console.log(newNodes)
+
+
+      nodes.value=newNodes
+
+
     });
 
     useHead({
@@ -293,7 +246,7 @@ export default {
         class="w-px h-px opacity-0 overflow-hidden absolute"
         @change="manuelUpload"
         :ref="file"
-        accept=".pdf,.jpg,.jpeg,.png,.zip,.rar"
+        accept=".nii,.tar,.gz,.zip,.rar"
       />
 
       <label for="assetsFieldHandle" class="block cursor-pointer">
@@ -310,7 +263,6 @@ export default {
           z-10
           bg-opacity-70 bg-green-200
           transition-all
-          animate-ping
           flex
           items-center
           justify-center
@@ -320,22 +272,22 @@ export default {
         "
       >
         <Icon
-          icon="feather:check-circle"
+          icon="feather:loader"
           width="80"
-          class="text-green-500"
+          class="text-green-500 animate-spin"
           style="background-color: transparent; margin-left: 20px"
         />
       </div>
     </div>
 
-    <!-- <TreeItem
+    <File
       class="item"
       v-for="item in nodes"
       :key="item.id"
-      :item="item"
-    ></TreeItem> -->
+      :file="item"
+    ></File>
 
-    <FileList :data="fileListData" />
+    <!-- <FileList :data="fileListData" /> -->
   </div>
 </template>
 
